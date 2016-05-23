@@ -3,6 +3,11 @@ from ivr_phone_tree_python import app
 import twilio.twiml
 from ivr_phone_tree_python.view_helpers import twiml
 
+prompts = {'six four' : '6 - 4',
+           'five - seven' : '5 - 7',
+           'threes' : '3 - 3',
+           'Deuce' : 'Deuce',
+           'Add in' : 'Add in'}
 
 @app.route('/')
 @app.route('/ivr')
@@ -46,6 +51,24 @@ def planets():
 
     return _redirect_welcome()
 
+
+@app.route('/ivr/pingpong', methods=['POST'])
+def pingpong():
+    resp = twilio.twiml.Response()
+    resp.say("Speak six four")
+    resp.record(maxLength="30", action='/handle-recording')
+    return str(resp)
+
+@app.route("/handle-recording", methods=['GET', 'POST'])
+def handle_recording():
+    """Play back the caller's recording."""
+
+    recording_url = request.values.get("RecordingUrl", None)
+
+    resp = twilio.twiml.Response()
+    resp.say("Replaying...")
+    resp.play(recording_url)
+    return str(resp)
 
 # private methods
 
