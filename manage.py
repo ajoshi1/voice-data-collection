@@ -1,7 +1,13 @@
 from ivr_phone_tree_python import app
-from flask.ext.script import Manager
+from flask.ext.script import Server, Manager
+import os
+
+port = 5000
+if 'PORT' in os.environ.keys():
+    port = os.environ['PORT']
 
 manager = Manager(app)
+manager.add_command("runserver", Server(port=port))
 
 
 @manager.command

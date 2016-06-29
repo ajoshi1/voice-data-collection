@@ -1,0 +1,7 @@
+---
+applications:
+- name: sound-catcher
+  memory: 1G
+  instances: 1
+  buildpack: https://github.com/cloudfoundry/python-buildpack
+  random-route: true
