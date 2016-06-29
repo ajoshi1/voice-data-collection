@@ -1,4 +1,4 @@
-﻿from flask import render_template, redirect, url_for, request, session, flash
+﻿from flask import session, render_template, redirect, url_for, request, session, flash
 from ivr_phone_tree_python import app
 import twilio.twiml
 from ivr_phone_tree_python.view_helpers import twiml
@@ -14,7 +14,8 @@ prompts =   [('point seven','10 - 7'),
                 ('Deuce','Deuce'),
                 ('two four','2 - 4')
                 ]
-counter = 0
+
+app.secret_key = 'fkP6Jc8zc1gz56PT7lvsc12aaibdBYG5'
 
 @app.route('/')
 @app.route('/ivr')
@@ -25,8 +26,9 @@ def home():
 def pinit():
     resp = twilio.twiml.Response()
     print 'init prompts'
-    global counter
-    counter = 0
+
+    initSessionCounter()
+
     resp.redirect(url_for('pingpong'))
     return str(resp)
 
@@ -34,26 +36,27 @@ def pinit():
 def pingpong():
     #resp = None
     try:
-        key, val = prompts[counter]
+        key, val = prompts[session['counter']]
         #resp = _prompt("six nine", "6 - 9")
         print(key)
         resp = _prompt(key, val)
     except:
         resp = twilio.twiml.Response()
         resp.say("Thank you for your time")
+        session.clear()
         resp.hangup()
     return str(resp)
 
 @app.route("/handle-recording", methods=['GET', 'POST'])
 def handle_recording():
     """Handle the Recoring"""
-    global counter
+
     recording_url = request.values.get("RecordingUrl", None)
-    key, val = prompts[counter]
+    key, val = prompts[session['counter']]
 
     app.logger.info("%s,%s,%s" % (key,val,recording_url))
 
-    counter = counter + 1
+    sumSessionCounter()
 
     resp = twilio.twiml.Response()
     resp.redirect(url_for('pingpong'))
@@ -67,3 +70,12 @@ def _prompt(key, val):
     resp.pause(length=1)
     resp.record(maxLength="3", action='/handle-recording')
     return resp
+
+def initSessionCounter():
+    session['counter'] = 0
+
+def sumSessionCounter():
+  try:
+    session['counter'] += 1
+  except KeyError:
+    session['counter'] = 1
