@@ -1,8 +1,10 @@
 ﻿from flask import session, render_template, redirect, url_for, request, session, flash
 from ivr_phone_tree_python import app
+from ivr_phone_tree_python.__init__ import engine, log
 import twilio.twiml
 from ivr_phone_tree_python.view_helpers import twiml
 import time
+import uuid
 
 prompts =   [('point seven','10 - 7'),
                 ('nine ten','9 - 10'),
@@ -10,7 +12,7 @@ prompts =   [('point seven','10 - 7'),
                 ('Add In','Add In'),
                 ('seven five','7 - 5'),
                 ('eight six','8 - 6'),
-                ('Add Out','Add Out'),
+                ('four zero','4 - 0'),
                 ('Deuce','Deuce'),
                 ('two four','2 - 4')
                 ]
@@ -54,7 +56,8 @@ def handle_recording():
     recording_url = request.values.get("RecordingUrl", None)
     key, val = prompts[session['counter']]
 
-    app.logger.info("%s,%s,%s" % (key,val,recording_url))
+    #app.logger.info("%s,%s,%s" % (key,val,recording_url))
+    log_to_db(session['uid'], key, val, recording_url)
 
     sumSessionCounter()
 
@@ -73,9 +76,16 @@ def _prompt(key, val):
 
 def initSessionCounter():
     session['counter'] = 0
+    session['uid'] = uuid.uuid4()
 
 def sumSessionCounter():
   try:
     session['counter'] += 1
   except KeyError:
     session['counter'] = 1
+
+def log_to_db(session_id, key, value, url):
+    conn = engine.connect()
+    ins = log.insert().values(session_id=session_id, key=key, value=value, url=url)
+    conn.execute(ins)
+    conn.close()
