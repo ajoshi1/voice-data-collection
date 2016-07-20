@@ -64,3 +64,6 @@ target/
 
 .env
 .env.test
+
+# all recordings
+recordings/**/*
