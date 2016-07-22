@@ -14,11 +14,13 @@ def configure_app(new_app, config_name='development'):
 app = Flask(__name__)
 import ivr_phone_tree_python.views
 
-vcap_services = json.loads(os.getenv("VCAP_SERVICES"))
-uri = vcap_services["elephantsql"][0]["credentials"]["uri"]
-#setup database
-#engine = create_engine('postgresql://localhost:5432/soundc')
-engine = create_engine(uri, poolclass=NullPool)
+enviornment = 'development'
+if os.getenv("ENV") is not None:
+    enviornment = os.getenv("ENV")
+
+configure_app(app, enviornment)
+
+engine = create_engine(app.config["DATABASE_URI"], poolclass=NullPool)
 metadata = MetaData()
 
 log = Table('log', metadata,
@@ -29,5 +31,3 @@ log = Table('log', metadata,
 )
 
 metadata.create_all(engine)
-
-configure_app(app)

@@ -2,10 +2,8 @@ from ivr_phone_tree_python import app
 from flask.ext.script import Server, Manager
 import os
 
-port = int(os.getenv("PORT"))
-
 manager = Manager(app)
-manager.add_command("runserver", Server(host='0.0.0.0', port=port))
+manager.add_command("runserver", Server(host=app.config["HOST"], port=app.config["PORT"]))
 
 @manager.command
 def test():
