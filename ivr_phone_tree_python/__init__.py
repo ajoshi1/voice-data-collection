@@ -27,7 +27,8 @@ log = Table('log', metadata,
     Column('session_id', Text),
     Column('key', Text),
     Column('value', Text),
-    Column('url', Text)
+    Column('url', Text),
+    Column('created_at', DateTime)
 )
 
 metadata.create_all(engine)
